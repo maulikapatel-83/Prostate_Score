@@ -78,14 +78,15 @@ class SqueezeAndExcitation(tf.keras.layers.Layer):
 # SETTINGS
 # ============================================================
 import gdown
-gdown.download( id= "144SOJTBGV2s74XXa064p8QqSEbUJaQHQ", output="RIL-SE-Clinic-model.keras", quiet=False)
-#https://drive.google.com/file/d/144SOJTBGV2s74XXa064p8QqSEbUJaQHQ/view?usp=sharing
+import os
+
 MODEL_PATH = "RIL-SE-Clinic-model.keras"
 
+if not os.path.exists(MODEL_PATH):
+    gdown.download( id= "144SOJTBGV2s74XXa064p8QqSEbUJaQHQ", output="RIL-SE-Clinic-model.keras", quiet=False)
+    #https://drive.google.com/file/d/144SOJTBGV2s74XXa064p8QqSEbUJaQHQ/view?usp=sharing
 IMAGE_SIZE = 224
-
 NUM_CLASSES = 6
-
 # Change these names according to your dataset
 CLASS_NAMES = [
     "Gleason Grade 0",
