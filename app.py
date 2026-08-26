@@ -84,8 +84,8 @@ import os
 MODEL_PATH = "RIL-SE-Clinic-model.keras"
 
 if not os.path.exists(MODEL_PATH):
-    gdown.download( id= "144SOJTBGV2s74XXa064p8QqSEbUJaQHQ", output="RIL-SE-Clinic-model.keras", quiet=False)
-    #https://drive.google.com/file/d/144SOJTBGV2s74XXa064p8QqSEbUJaQHQ/view?usp=sharing
+    gdown.download( id= "1Lj-IWr2Ghl76FCxfvUhah1UdZ0Ckbtfs", output="RIL-SE-Clinic-model.keras", quiet=False)
+    #https://drive.google.com/file/d/1Lj-IWr2Ghl76FCxfvUhah1UdZ0Ckbtfs/view?usp=sharing
 IMAGE_SIZE = 224
 NUM_CLASSES = 6
 # Change these names according to your dataset
