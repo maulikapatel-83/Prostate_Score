@@ -78,8 +78,8 @@ class SqueezeAndExcitation(tf.keras.layers.Layer):
 # SETTINGS
 # ============================================================
 import gdown
-gdown.download( id= "1PZK8n3Dv4G-qWn0gDML5uujEfkMznAxi", output="RIL-SE-Clinic-model.keras", quiet=False)
-
+gdown.download( id= "144SOJTBGV2s74XXa064p8QqSEbUJaQHQ", output="RIL-SE-Clinic-model.keras", quiet=False)
+#https://drive.google.com/file/d/144SOJTBGV2s74XXa064p8QqSEbUJaQHQ/view?usp=sharing
 MODEL_PATH = "RIL-SE-Clinic-model.keras"
 
 IMAGE_SIZE = 224
