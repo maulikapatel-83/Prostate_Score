@@ -92,14 +92,6 @@ except Exception as e:
 st.title("🔬 Prostate Cancer Gleason Grading")
 
 st.subheader("Histopathological Image Classification")
-
-st.write(
-    """
-    Upload a prostate histopathology image to obtain the
-    predicted Gleason grade using the trained CNN model.
-    """
-)
-
 st.divider()
 
 
