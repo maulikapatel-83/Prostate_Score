@@ -1,5 +1,6 @@
 # ============================================================
 # PROSTATE CANCER GLEASON GRADING - STREAMLIT WEB APP
+# CNN MODEL - 6 CLASS CLASSIFICATION
 # ============================================================
 
 import streamlit as st
@@ -7,6 +8,8 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 import cv2
+import gdown
+import os
 
 # ============================================================
 # PAGE CONFIGURATION
@@ -19,76 +22,15 @@ st.set_page_config(
 )
 
 # ============================================================
-# CUSTOM SQUEEZE-AND-EXCITATION LAYER
-# ============================================================
-
-class SqueezeAndExcitation(tf.keras.layers.Layer):
-
-    def __init__(self, reduction_ratio=16, **kwargs):
-        super(SqueezeAndExcitation, self).__init__(**kwargs)
-        self.reduction_ratio = reduction_ratio
-
-    def build(self, input_shape):
-
-        self.global_avg_pool = tf.keras.layers.GlobalAveragePooling2D()
-
-        self.dense1 = tf.keras.layers.Dense(
-            input_shape[-1] // self.reduction_ratio,
-            activation="relu",
-            use_bias=False
-        )
-
-        self.dense2 = tf.keras.layers.Dense(
-            input_shape[-1],
-            activation="sigmoid",
-            use_bias=False
-        )
-
-        super().build(input_shape)
-
-    def call(self, inputs):
-
-        # Squeeze
-        squeeze = self.global_avg_pool(inputs)
-
-        # Reshape
-        squeeze = tf.reshape(
-            squeeze,
-            (-1, 1, 1, tf.shape(squeeze)[-1])
-        )
-
-        # Excitation
-        excitation = self.dense1(squeeze)
-        excitation = self.dense2(excitation)
-
-        # Scale
-        return inputs * excitation
-
-    def get_config(self):
-
-        config = super().get_config()
-
-        config.update({
-            "reduction_ratio": self.reduction_ratio
-        })
-
-        return config
-
-
-# ============================================================
 # SETTINGS
 # ============================================================
-import gdown
-import os
 
 MODEL_PATH = "RIL-SE-Clinic-model.keras"
 
-if not os.path.exists(MODEL_PATH):
-    gdown.download( id= "1Lj-IWr2Ghl76FCxfvUhah1UdZ0Ckbtfs", output="RIL-SE-Clinic-model.keras", quiet=False)
-    #https://drive.google.com/file/d/1Lj-IWr2Ghl76FCxfvUhah1UdZ0Ckbtfs/view?usp=sharing
 IMAGE_SIZE = 224
+
 NUM_CLASSES = 6
-# Change these names according to your dataset
+
 CLASS_NAMES = [
     "Gleason Grade 0",
     "Gleason Grade 1",
@@ -98,6 +40,19 @@ CLASS_NAMES = [
     "Gleason Grade 5"
 ]
 
+# ============================================================
+# DOWNLOAD MODEL IF NOT EXISTS
+# ============================================================
+
+if not os.path.exists(MODEL_PATH):
+
+    with st.spinner("Downloading trained CNN model..."):
+
+        gdown.download(
+            id="1Lj-IWr2Ghl76FCxfvUhah1UdZ0Ckbtfs",
+            output=MODEL_PATH,
+            quiet=False
+        )
 
 # ============================================================
 # LOAD MODEL
@@ -107,10 +62,7 @@ CLASS_NAMES = [
 def load_model():
 
     model = tf.keras.models.load_model(
-        MODEL_PATH,
-        custom_objects={
-            "SqueezeAndExcitation": SqueezeAndExcitation
-        }
+        MODEL_PATH
     )
 
     return model
@@ -126,7 +78,7 @@ try:
 
 except Exception as e:
 
-    st.error("Unable to load the trained model.")
+    st.error("Unable to load the trained CNN model.")
 
     st.code(str(e))
 
@@ -144,7 +96,7 @@ st.subheader("Histopathological Image Classification")
 st.write(
     """
     Upload a prostate histopathology image to obtain the
-    predicted Gleason grade from the trained deep learning model.
+    predicted Gleason grade using the trained CNN model.
     """
 )
 
@@ -168,12 +120,18 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file is not None:
 
-    # Read image
-    image = Image.open(uploaded_file).convert("RGB")
-    
-    
+    # --------------------------------------------------------
+    # READ IMAGE
+    # --------------------------------------------------------
 
-    # Display image
+    image = Image.open(
+        uploaded_file
+    ).convert("RGB")
+
+    # --------------------------------------------------------
+    # DISPLAY IMAGE
+    # --------------------------------------------------------
+
     st.subheader("Uploaded Image")
 
     st.image(
@@ -184,49 +142,84 @@ if uploaded_file is not None:
 
     st.divider()
 
-    # Predict button
+    # --------------------------------------------------------
+    # PREDICT BUTTON
+    # --------------------------------------------------------
+
     if st.button(
         "🔍 Predict Gleason Grade",
         use_container_width=True
     ):
 
-        with st.spinner("Analyzing histopathology image..."):
-            image1 = np.array(image)
-            # Resize image
-            img_array = cv2.resize(image1, (224, 224))
+        with st.spinner(
+            "Analyzing histopathology image..."
+        ):
+
+            # Convert PIL image to NumPy
+            image_array = np.array(image)
+
+            # ------------------------------------------------
+            # RESIZE
+            # ------------------------------------------------
+
+            image_array = cv2.resize(
+                image_array,
+                (IMAGE_SIZE, IMAGE_SIZE)
+            )
+
+            # ------------------------------------------------
+            # IMPORTANT:
+            # NO /255 NORMALIZATION
+            # ------------------------------------------------
+
+            image_array = image_array.astype(
+                np.float32
+            )
 
             # Add batch dimension
-            img_array = np.expand_dims(
-                img_array,
+            image_array = np.expand_dims(
+                image_array,
                 axis=0
             )
 
-            # Prediction
+            # ------------------------------------------------
+            # MODEL PREDICTION
+            # ------------------------------------------------
+
             predictions = model.predict(
-                img_array,
+                image_array,
                 verbose=0
             )
 
             probabilities = predictions[0]
 
-            # Predicted class
+            # ------------------------------------------------
+            # PREDICTED CLASS
+            # ------------------------------------------------
+
             predicted_class = np.argmax(
                 probabilities
             )
 
-            # Confidence
+            # ------------------------------------------------
+            # CONFIDENCE
+            # ------------------------------------------------
+
             confidence = probabilities[
                 predicted_class
             ]
-
 
         # ====================================================
         # DISPLAY RESULT
         # ====================================================
 
-        st.success("Prediction completed successfully!")
+        st.success(
+            "Prediction completed successfully!"
+        )
 
-        st.subheader("Prediction Result")
+        st.subheader(
+            "Prediction Result"
+        )
 
         col1, col2 = st.columns(2)
 
@@ -244,15 +237,15 @@ if uploaded_file is not None:
                 f"{confidence * 100:.2f}%"
             )
 
-
         st.divider()
-
 
         # ====================================================
         # PROBABILITY DISTRIBUTION
         # ====================================================
 
-        st.subheader("Class Probability")
+        st.subheader(
+            "Class Probability"
+        )
 
         for i in range(NUM_CLASSES):
 
@@ -271,7 +264,6 @@ if uploaded_file is not None:
             )
 
 
-
 # ============================================================
 # NO IMAGE MESSAGE
 # ============================================================
@@ -282,7 +274,6 @@ else:
         "👆 Please upload a prostate histopathology image "
         "to perform Gleason grading."
     )
-
 
 # ============================================================
 # FOOTER
