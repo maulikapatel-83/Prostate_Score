@@ -197,9 +197,6 @@ if uploaded_file is not None:
             # Convert to NumPy
             img_array = np.array(img)
 
-            # Normalize
-            img_array = img_array.astype("float32") / 255.0
-
             # Add batch dimension
             img_array = np.expand_dims(
                 img_array,
