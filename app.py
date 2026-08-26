@@ -273,21 +273,6 @@ if uploaded_file is not None:
             )
 
 
-        # ====================================================
-        # RAW PREDICTION
-        # ====================================================
-
-        st.divider()
-
-        st.subheader("Model Output")
-
-        prediction_data = {
-            CLASS_NAMES[i]: f"{probabilities[i] * 100:.2f}%"
-            for i in range(NUM_CLASSES)
-        }
-
-        st.table(prediction_data)
-
 
 # ============================================================
 # NO IMAGE MESSAGE
@@ -309,10 +294,5 @@ st.divider()
 
 st.caption(
     "Prostate Cancer Gleason Grading Classification "
-    "using Deep Learning with Squeeze-and-Excitation."
-)
-
-st.caption(
-    "⚠️ Research/educational use only. "
-    "This application is not intended for clinical diagnosis."
+    "using Deep Learning with Reinforcement-Squeeze-and-Excitation."
 )
