@@ -169,6 +169,8 @@ if uploaded_file is not None:
 
     # Read image
     image = Image.open(uploaded_file).convert("RGB")
+    
+    
 
     # Display image
     st.subheader("Uploaded Image")
@@ -188,14 +190,9 @@ if uploaded_file is not None:
     ):
 
         with st.spinner("Analyzing histopathology image..."):
-
+            image1 = np.array(image)
             # Resize image
-            img = image.resize(
-                (IMAGE_SIZE, IMAGE_SIZE)
-            )
-
-            # Convert to NumPy
-            img_array = np.array(img)
+            img_array = cv2.resize(image1, (224, 224))
 
             # Add batch dimension
             img_array = np.expand_dims(
